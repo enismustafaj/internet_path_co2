@@ -1,8 +1,8 @@
 import subprocess
-import re
 import os
 import platform
 import argparse
+from time import sleep
 
 from dotenv import load_dotenv
 import constants
@@ -53,14 +53,20 @@ if __name__ == '__main__':
         carbon_intensities = []
 
         for i, location in enumerate(geolocations):
-            carbon_intensities.append(
-                utils.get_carbon_intensity(
-                    constants.CO2_SIGNAL_ENDPOINT,
-                    headers={'auth-token': os.getenv('CO2_SIGNAL_API_KEY')},
-                    params={
-                        'lat': location[0],
-                        'lon': location[1]
-                    }))
+            if not len(location) == 0:
+                try:
+                    carbon_intensities.append(
+                        utils.get_carbon_intensity(
+                            constants.CO2_SIGNAL_ENDPOINT,
+                            headers={
+                                'auth-token': os.getenv('CO2_SIGNAL_API_KEY')
+                            },
+                            params={
+                                'lat': location[0],
+                                'lon': location[1]
+                            }))
+                except utils.APIFailException as e:
+                    print(e)
 
         website_carbon['site'] = carbon_intensities
 
