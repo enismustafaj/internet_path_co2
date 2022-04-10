@@ -1,3 +1,5 @@
+import json
+import os
 import requests
 import re
 import constants
@@ -13,9 +15,12 @@ def parse_output(output):
 
 def read_filesites(source_file):
 
-    with open(source_file, "r") as file:
-        sites = file.read().split("\n")
-        return sites
+    try:
+        with open(source_file, "r") as file:
+            sites = file.read().split("\n")
+            return sites
+    except FileNotFoundError:
+        raise Exception("File not found")
 
 
 def get_location_from_ip(endpoint, headers=None, params=None):
@@ -45,3 +50,13 @@ def get_carbon_intensity(endpoint, headers=None, params=None):
             raise APIFailException(response['message'])
     else:
         return response['data']['carbonIntensity']
+
+
+def print_results_to_file(results, path='./results'):
+
+    dir_exists = os.path.exists(path)
+    if not dir_exists:
+        os.mkdir(path)
+
+    with open(f'{path}/results_json.json', 'w+') as file:
+        file.write(json.dumps(results))

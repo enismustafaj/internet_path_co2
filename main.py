@@ -2,7 +2,6 @@ import subprocess
 import os
 import platform
 import argparse
-from time import sleep
 
 from dotenv import load_dotenv
 import constants
@@ -24,10 +23,10 @@ if __name__ == '__main__':
     if args.command:
         trace_command = args.command
     else:
-        if platform.system() == "Windows":
-            trace_command = "tracert"
+        if platform.system() == 'Windows':
+            trace_command = 'tracert'
         else:
-            trace_command = "traceroute"
+            trace_command = 'traceroute'
 
     if args.source:
         sites = utils.read_filesites(args.source)
@@ -37,7 +36,7 @@ if __name__ == '__main__':
     for i, site in enumerate(sites):
         if i == 1:
             break
-        print("Trecerouting ", site, " ...")
+        print('Tracerouting ', site, ' ...')
         routes = subprocess.run([trace_command, site],
                                 stdout=subprocess.PIPE,
                                 text=True)
@@ -68,6 +67,9 @@ if __name__ == '__main__':
                 except utils.APIFailException as e:
                     print(e)
 
-        website_carbon['site'] = carbon_intensities
+        website_carbon[site] = {
+            'hops': hops,
+            'carbon_intensities': carbon_intensities
+        }
 
-    print(carbon_intensities)
+    utils.print_results_to_file(website_carbon)
