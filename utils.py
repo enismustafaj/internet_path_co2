@@ -33,7 +33,7 @@ def read_filesites(source_file):
 
 def check_header(file):
     first = file.read(1)
-    return first not in ".-0123456789"
+    return first in "abcdefghijklmopqrstuvwxyz"
 
 
 def get_location_from_ip(endpoint, headers=None, params=None):
