@@ -35,47 +35,56 @@ if __name__ == "__main__":
         sites = utils.read_filesites("./topsites.txt")
 
     for i, site in enumerate(sites):
-        if i == 1:
-            break
+
         print("Tracerouting ", site, " ...")
-        try:
-            routes = subprocess.check_call(
-                trace_command + [site],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            hops = utils.parse_output(routes.stdout)
+        routes = subprocess.run(
+            trace_command + [site],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
 
-            geolocations = []
-            for hop in hops:
-                geolocations.append(
-                    utils.get_location_from_ip(
-                        constants.IP_DATA_ENDPOINT % hop,
-                        None,
-                        {"api-key": os.getenv("IP_DATA_API_KEY")},
-                    )
+        if routes.returncode != 0:
+            print(f"Traceroute for {site} failed")
+            continue
+
+        hops = utils.parse_output(routes.stdout)
+
+        geolocations = []
+        countries = []
+        for hop in hops:
+            try:
+                location, country_code = utils.get_location_from_ip(
+                    constants.IP_DATA_ENDPOINT % hop,
+                    None,
+                    {"api-key": os.getenv("IP_DATA_API_KEY")},
                 )
+                geolocations.append(location)
+                countries.append(country_code)
+                print(hop, ": ", location, " - ", country_code)
+            except utils.APIFailException as e:
+                print(e)
 
-            carbon_intensities = []
+        carbon_intensities = []
 
-            for i, location in enumerate(geolocations):
-                if not len(location) == 0:
-                    try:
-                        carbon_intensities.append(
-                            utils.get_carbon_intensity(
-                                constants.CO2_SIGNAL_ENDPOINT,
-                                headers={"auth-token": os.getenv("CO2_SIGNAL_API_KEY")},
-                                params={"lat": location[0], "lon": location[1]},
-                            )
+        for i, location in enumerate(geolocations):
+            if not len(location) == 0:
+                try:
+                    carbon_intensities.append(
+                        utils.get_carbon_intensity(
+                            constants.CO2_SIGNAL_ENDPOINT,
+                            headers={"auth-token": os.getenv("CO2_SIGNAL_API_KEY")},
+                            params={"lat": location[0], "lon": location[1]},
                         )
-                    except utils.APIFailException as e:
-                        print(e)
+                    )
+                except utils.APIFailException as e:
+                    carbon_intensities.append(-1)
+                    print(e)
 
-            website_carbon[site] = {
-                "hops": hops,
-                "carbon_intensities": carbon_intensities,
-            }
+        website_carbon[site] = {
+            "hops": hops,
+            "carbon_intensities": carbon_intensities,
+            "countries": countries,
+        }
 
-            utils.print_results_to_file(website_carbon)
-        except subprocess.CalledProcessError as e:
-            print("Error: ", e.returncode)
+        utils.print_results_to_file(website_carbon)
