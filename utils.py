@@ -69,7 +69,7 @@ def get_carbon_intensity(endpoint, headers=None, params=None):
             raise APIFailException("No data found")
 
 
-def print_results_to_file(results, path="./results"):
+def print_results_to_file(results, path="./results", filename=""):
     now = datetime.now()
 
     dir_exists = os.path.exists(path)
@@ -77,6 +77,6 @@ def print_results_to_file(results, path="./results"):
         os.mkdir(path)
 
     with open(
-        f"{path}/results_json_" + now.strftime("%m_%d_%Y") + ".json", "w+"
+        f"{path}/results_json_" + now.strftime("%m_%d_%Y") + filename + ".json", "w+"
     ) as file:
         file.write(json.dumps(results))
