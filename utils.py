@@ -58,7 +58,7 @@ def get_carbon_intensity(endpoint, headers=None, params=None):
 
     if "message" in response:
         if response["message"] == "API rate limit exceeded":
-            sleep(40)
+            sleep(50)
             return get_carbon_intensity(endpoint, headers=headers, params=params)
         else:
             raise APIFailException(response["message"])
