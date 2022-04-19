@@ -86,5 +86,5 @@ if __name__ == "__main__":
             "carbon_intensities": carbon_intensities,
             "countries": countries,
         }
-
+        print("Traceroute for ", site, " completed")
         utils.print_results_to_file(website_carbon)

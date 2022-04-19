@@ -12,7 +12,11 @@ from datetime import datetime
 
 def parse_output(output):
     hops = re.findall(constants.IP_V4_REGEX, output)
-    return hops[1:]
+
+    if hops[0] == hops[len(hops) - 1]:
+        return hops[1:]
+    else:
+        return hops
 
 
 def read_filesites(source_file):
