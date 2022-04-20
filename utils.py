@@ -4,6 +4,7 @@ import requests
 import re
 import constants
 import csv
+import subprocess
 
 from time import sleep
 from exceptions import APIFailException
@@ -84,3 +85,61 @@ def print_results_to_file(results, path="./results", filename=""):
         f"{path}/results_json_" + now.strftime("%m_%d_%Y") + filename + ".json", "w+"
     ) as file:
         file.write(json.dumps(results))
+
+
+def traceroute_sites(sites, loop, output, trace_command):
+    website_carbon = dict()
+    for i, site in enumerate(sites):
+
+        print("Tracerouting ", site, " ...")
+        routes = subprocess.run(
+            trace_command + [site],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+
+        if routes.returncode != 0:
+            print(f"Traceroute for {site} failed")
+            continue
+
+        hops = parse_output(routes.stdout)
+
+        geolocations = []
+        countries = []
+        for hop in hops:
+            try:
+                location, country_code = get_location_from_ip(
+                    constants.IP_DATA_ENDPOINT % hop,
+                    None,
+                    {"api-key": os.getenv("IP_DATA_API_KEY")},
+                )
+                geolocations.append(location)
+                countries.append(country_code)
+                print(hop, ": ", location, " - ", country_code)
+            except APIFailException as e:
+                print(e)
+
+        carbon_intensities = []
+
+        for i, location in enumerate(geolocations):
+            if not len(location) == 0:
+                try:
+                    carbon_intensities.append(
+                        get_carbon_intensity(
+                            constants.CO2_SIGNAL_ENDPOINT,
+                            headers={"auth-token": os.getenv("CO2_SIGNAL_API_KEY")},
+                            params={"lat": location[0], "lon": location[1]},
+                        )
+                    )
+                except APIFailException as e:
+                    carbon_intensities.append(-1)
+                    print(e)
+
+        website_carbon[site] = {
+            "hops": hops,
+            "carbon_intensities": carbon_intensities,
+            "countries": countries,
+        }
+        print("Traceroute for ", site, " completed")
+        print_results_to_file(website_carbon, " " + str(loop) + "/" + output)

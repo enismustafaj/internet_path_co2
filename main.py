@@ -1,10 +1,7 @@
-import subprocess
-import os
 import platform
 import argparse
 
 from dotenv import load_dotenv
-import constants
 import utils
 
 load_dotenv()
@@ -14,6 +11,9 @@ arg_parser = argparse.ArgumentParser(
 )
 arg_parser.add_argument("--source", help="Provide source file of websites")
 arg_parser.add_argument("--command", help="Provide traceroute command")
+arg_parser.add_argument("--loop", help="Provide number of runs")
+arg_parser.add_argument("--output", help="Provide output file")
+
 
 args = arg_parser.parse_args()
 
@@ -34,57 +34,16 @@ if __name__ == "__main__":
     else:
         sites = utils.read_filesites("./topsites.txt")
 
-    for i, site in enumerate(sites):
+    if args.loop:
+        loop = int(args.loop)
+    else:
+        loop = 1
 
-        print("Tracerouting ", site, " ...")
-        routes = subprocess.run(
-            trace_command + [site],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
+    if args.output:
+        output_file = args.output
+    else:
+        output_file = ""
 
-        if routes.returncode != 0:
-            print(f"Traceroute for {site} failed")
-            continue
+    for i in range(loop):
 
-        hops = utils.parse_output(routes.stdout)
-
-        geolocations = []
-        countries = []
-        for hop in hops:
-            try:
-                location, country_code = utils.get_location_from_ip(
-                    constants.IP_DATA_ENDPOINT % hop,
-                    None,
-                    {"api-key": os.getenv("IP_DATA_API_KEY")},
-                )
-                geolocations.append(location)
-                countries.append(country_code)
-                print(hop, ": ", location, " - ", country_code)
-            except utils.APIFailException as e:
-                print(e)
-
-        carbon_intensities = []
-
-        for i, location in enumerate(geolocations):
-            if not len(location) == 0:
-                try:
-                    carbon_intensities.append(
-                        utils.get_carbon_intensity(
-                            constants.CO2_SIGNAL_ENDPOINT,
-                            headers={"auth-token": os.getenv("CO2_SIGNAL_API_KEY")},
-                            params={"lat": location[0], "lon": location[1]},
-                        )
-                    )
-                except utils.APIFailException as e:
-                    carbon_intensities.append(-1)
-                    print(e)
-
-        website_carbon[site] = {
-            "hops": hops,
-            "carbon_intensities": carbon_intensities,
-            "countries": countries,
-        }
-        print("Traceroute for ", site, " completed")
-        utils.print_results_to_file(website_carbon)
+        utils.traceroute_sites(sites, i + 1, output_file, trace_command)
