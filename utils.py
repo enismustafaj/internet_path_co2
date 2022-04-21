@@ -88,7 +88,7 @@ def print_results_to_file(results, path="./results", filename=""):
         os.mkdir(path)
 
     with open(
-        f"{path}/results_json_" + now.strftime("%m_%d_%Y") + filename + ".json", "w+"
+        f"{path}/results_" + now.strftime("%m_%d_%Y") + filename + ".json", "w+"
     ) as file:
         file.write(json.dumps(results))
 
