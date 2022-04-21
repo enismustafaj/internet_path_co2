@@ -1,8 +1,10 @@
 import platform
 import argparse
+import os
 
 from dotenv import load_dotenv
 import utils
+from token_state import TokenState
 
 load_dotenv()
 
@@ -44,6 +46,13 @@ if __name__ == "__main__":
     else:
         output_file = ""
 
+    tokens = [
+        os.getenv("CO2_SIGNAL_API_KEY"),
+        os.getenv("CO2_SIGNAL_API_KEY2"),
+        os.getenv("CO2_SIGNAL_API_KEY3"),
+    ]
+    state = TokenState(tokens, 0)
+
     for i in range(loop):
 
-        utils.traceroute_sites(sites, i + 1, output_file, trace_command)
+        utils.traceroute_sites(sites, i + 1, output_file, trace_command, state)

@@ -56,15 +56,21 @@ def get_location_from_ip(endpoint, headers=None, params=None):
         raise APIFailException("No location found")
 
 
-def get_carbon_intensity(endpoint, headers=None, params=None):
-    response = requests.get(endpoint, headers=headers, params=params)
-    response = response.json()
-    print(response)
+def get_carbon_intensity(endpoint, state, params=None):
+
+    headers = {"auth-token": state.get_token_state()}
+    try:
+        response = requests.get(endpoint, headers=headers, params=params)
+        response = response.json()
+        print(response)
+    except requests.exceptions.RequestException as e:
+        raise APIFailException(e)
 
     if "message" in response:
         if response["message"] == "API rate limit exceeded":
-            sleep(50)
-            return get_carbon_intensity(endpoint, headers=headers, params=params)
+            state.update_token_state()
+            sleep(35)
+            return get_carbon_intensity(endpoint, state, params=params)
         else:
             raise APIFailException(response["message"])
     else:
@@ -87,7 +93,7 @@ def print_results_to_file(results, path="./results", filename=""):
         file.write(json.dumps(results))
 
 
-def traceroute_sites(sites, loop, output, trace_command):
+def traceroute_sites(sites, loop, output, trace_command, state):
     website_carbon = dict()
     for i, site in enumerate(sites):
 
@@ -128,7 +134,7 @@ def traceroute_sites(sites, loop, output, trace_command):
                     carbon_intensities.append(
                         get_carbon_intensity(
                             constants.CO2_SIGNAL_ENDPOINT,
-                            headers={"auth-token": os.getenv("CO2_SIGNAL_API_KEY")},
+                            state,
                             params={"lat": location[0], "lon": location[1]},
                         )
                     )
@@ -142,4 +148,6 @@ def traceroute_sites(sites, loop, output, trace_command):
             "countries": countries,
         }
         print("Traceroute for ", site, " completed")
-        print_results_to_file(website_carbon, " " + str(loop) + "/" + output)
+        print_results_to_file(
+            website_carbon, filename="_loop" + str(loop) + "_" + output
+        )
