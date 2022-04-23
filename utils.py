@@ -14,6 +14,9 @@ from datetime import datetime
 def parse_output(output):
     hops = re.findall(constants.IP_V4_REGEX, output)
 
+    if len(hops) == 0:
+        return []
+
     if hops[0] == hops[len(hops) - 1]:
         return hops[1:]
     else:

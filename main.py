@@ -50,6 +50,7 @@ if __name__ == "__main__":
         os.getenv("CO2_SIGNAL_API_KEY"),
         os.getenv("CO2_SIGNAL_API_KEY2"),
         os.getenv("CO2_SIGNAL_API_KEY3"),
+        os.getenv("CO2_SIGNAL_API_KEY4"),
     ]
     state = TokenState(tokens, 0)
 
