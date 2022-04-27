@@ -1,5 +1,3 @@
-from ast import arg
-import sys
 import pandas as pd
 import os
 import json
