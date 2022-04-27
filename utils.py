@@ -7,10 +7,10 @@ import csv
 import subprocess
 
 from time import sleep
-from exceptions import APIFailException
+from exceptions import APIFailException, ReadFileException
 from datetime import datetime
 
-
+# Parse the output of the traceroute command
 def parse_output(output):
     hops = re.findall(constants.IP_V4_REGEX, output)
 
@@ -23,12 +23,14 @@ def parse_output(output):
         return hops
 
 
+# Read the destinations from a file
 def read_filesites(source_file):
 
     try:
         with open(source_file, "r") as file:
             sites = []
             rows = csv.reader(file, delimiter=",")
+            # Skip the header if it exists
             if check_header(file):
                 next(rows, None)
             for row in rows:
@@ -36,32 +38,51 @@ def read_filesites(source_file):
 
             return sites
     except FileNotFoundError:
-        raise Exception("File not found")
+        raise ReadFileException("File not found")
 
 
+# Check if the file has a header
 def check_header(file):
     first = file.read(1)
     return first in "abcdefghijklmopqrstuvwxyz"
 
 
 def get_location_from_ip(endpoint, headers=None, params=None):
-    response = requests.get(endpoint, headers=headers, params=params)
-    response = response.json()
 
-    if "latitude" in response and "longitude" in response:
+    try:
+        response = requests.get(endpoint, headers=headers, params=params)
+        response = response.json()
+    except requests.exceptions.RequestException as e:
+        raise APIFailException(e)
+
+    if (
+        "latitude" in response
+        and "longitude" in response
+        and "country_code" in response
+    ):
         return (response["latitude"], response["longitude"]), response["country_code"]
-    elif "location" in response:
+
+    elif (
+        "latitude" in response
+        and "longitude" in response
+        and "country_code2" in response
+    ):
+        return (response["latitude"], response["longitude"]), response["country_code2"]
+    elif "location" in response and "country" in response:
         return (
             response["location"]["latitude"],
             response["location"]["longitude"],
-        ), response["country_code"]
+        ), response["country"]["isoAlpha2"]
     else:
         raise APIFailException("No location found")
 
 
+# Fetch the carbon intensity from the API
 def get_carbon_intensity(endpoint, state, params=None):
 
     headers = {"auth-token": state.get_token_state()}
+
+    # Check if the request is successful
     try:
         response = requests.get(endpoint, headers=headers, params=params)
         response = response.json()
@@ -70,6 +91,7 @@ def get_carbon_intensity(endpoint, state, params=None):
         raise APIFailException(e)
 
     if "message" in response:
+        # Sleep for 35 seconds to avoid hitting the API too quickly
         if response["message"] == "API rate limit exceeded":
             state.update_token_state()
             sleep(35)
@@ -80,12 +102,15 @@ def get_carbon_intensity(endpoint, state, params=None):
         if "data" in response and "carbonIntensity" in response["data"]:
             return response["data"]["carbonIntensity"]
         else:
+            # If data was not found, raise an exception
             raise APIFailException("No data found")
 
 
+# Output the results to a file in JSON format
 def print_results_to_file(results, path="./results", filename=""):
     now = datetime.now()
 
+    # Create the results directory if it does not exist
     dir_exists = os.path.exists(path)
     if not dir_exists:
         os.mkdir(path)
@@ -100,6 +125,9 @@ def traceroute_sites(sites, loop, output, trace_command, state):
     website_carbon = dict()
     for i, site in enumerate(sites):
 
+        # Check if the site is a valid URL
+        # by running a tracerote command
+        # and collect all the hops
         print("Tracerouting ", site, " ...")
         routes = subprocess.run(
             trace_command + [site],
@@ -116,21 +144,29 @@ def traceroute_sites(sites, loop, output, trace_command, state):
 
         geolocations = []
         countries = []
+
+        # Get the geolocation for each hop
         for hop in hops:
             try:
                 location, country_code = get_location_from_ip(
-                    constants.IP_DATA_ENDPOINT % hop,
+                    constants.BID_DATA_CLOUD_ENDPOINT,
                     None,
-                    {"api-key": os.getenv("IP_DATA_API_KEY")},
+                    {
+                        "key": os.getenv("BIG_DATA_CLOUD_API_KEY"),
+                        "ip": hop,
+                        "locality_language": "en",
+                    },
                 )
                 geolocations.append(location)
                 countries.append(country_code)
                 print(hop, ": ", location, " - ", country_code)
             except APIFailException as e:
+                countries.append("")
                 print(e)
 
         carbon_intensities = []
 
+        # Get the carbon intensity for each hop
         for i, location in enumerate(geolocations):
             if not len(location) == 0:
                 try:
@@ -145,12 +181,15 @@ def traceroute_sites(sites, loop, output, trace_command, state):
                     carbon_intensities.append(-1)
                     print(e)
 
+        # Add the results to the dictionary
         website_carbon[site] = {
             "hops": hops,
             "carbon_intensities": carbon_intensities,
             "countries": countries,
         }
         print("Traceroute for ", site, " completed")
+
+        # Print the results to a file
         print_results_to_file(
             website_carbon, filename="_loop" + str(loop) + "_" + output
         )

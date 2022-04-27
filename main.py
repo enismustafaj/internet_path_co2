@@ -3,6 +3,7 @@ import argparse
 import os
 
 from dotenv import load_dotenv
+from exceptions import ReadFileException
 import utils
 from token_state import TokenState
 
@@ -32,7 +33,11 @@ if __name__ == "__main__":
             trace_command = ["traceroute"]
 
     if args.source:
-        sites = utils.read_filesites(args.source)
+        try:
+            sites = utils.read_filesites(args.source)
+        except ReadFileException as e:
+            print(e)
+            exit(1)
     else:
         sites = utils.read_filesites("./topsites.txt")
 
