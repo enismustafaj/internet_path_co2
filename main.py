@@ -34,12 +34,12 @@ if __name__ == "__main__":
 
     if args.source:
         try:
-            sites = utils.read_filesites(args.source)
+            sites = utils.read_csv_file(args.source)
         except ReadFileException as e:
             print(e)
             exit(1)
     else:
-        sites = utils.read_filesites("./topsites.txt")
+        sites = utils.read_csv_file("./topsites.txt")
 
     if args.loop:
         loop = int(args.loop)

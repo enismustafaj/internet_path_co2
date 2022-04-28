@@ -24,7 +24,7 @@ def parse_output(output):
 
 
 # Read the destinations from a file
-def read_filesites(source_file):
+def read_csv_file(source_file):
 
     try:
         with open(source_file, "r") as file:
@@ -106,14 +106,18 @@ def get_carbon_intensity(endpoint, state, params=None):
             raise APIFailException("No data found")
 
 
+# Create the results directory if it does not exist
+def create_res_dir(path="./results"):
+    dir_exists = os.path.exists(path)
+    if not dir_exists:
+        os.mkdir(path)
+
+
 # Output the results to a file in JSON format
 def print_results_to_file(results, path="./results", filename=""):
     now = datetime.now()
 
-    # Create the results directory if it does not exist
-    dir_exists = os.path.exists(path)
-    if not dir_exists:
-        os.mkdir(path)
+    create_res_dir(path)
 
     with open(
         f"{path}/results_" + now.strftime("%m_%d_%Y") + filename + ".json", "w+"

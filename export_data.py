@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import json
 import argparse
+import utils
 
 import matplotlib.pyplot as plt
 
@@ -12,6 +13,7 @@ arg_parser = argparse.ArgumentParser(
 arg_parser.add_argument("--source", help="Provide source directory")
 arg_parser.add_argument("--hops", action="store_true")
 arg_parser.add_argument("--carbon", action="store_true")
+arg_parser.add_argument("--path", help="Provide output path")
 arg_parser.add_argument("--output", help="Provide output file")
 arg_parser.add_argument("--csv", action="store_true")
 
@@ -38,7 +40,7 @@ def create_csv_output(df, output):
     pd.DataFrame.to_csv(df, output, index=False)
 
 
-def extract_carbon_emission(df):
+def extract_carbon_intensities(df):
     carbon_emission = []
     carbon_emission.append(df.columns.tolist()[0])
 
@@ -58,6 +60,10 @@ def extract_hops(df):
             hops.append(head)
 
     return df[hops]
+
+
+def extract_carbon_error_val():
+    pass
 
 
 def export_data(source):
@@ -89,8 +95,15 @@ def export_data(source):
 if __name__ == "__main__":
     df = export_data(args.source)
 
+    output_path = "./output"
+
+    if args.path:
+        output_path = args.path
+
+    utils.create_res_dir(output_path)
+
     if args.carbon:
-        df = extract_carbon_emission(df)
+        df = extract_carbon_intensities(df)
     elif args.hops:
         df = extract_hops(df)
 
@@ -105,7 +118,7 @@ if __name__ == "__main__":
         loc="center",
     )
     fig.tight_layout()
-    fig.savefig(args.output)
+    fig.savefig(output_path + "/" + args.output)
 
     if args.csv:
-        create_csv_output(df, args.output)
+        create_csv_output(df, output_path + "/" + args.output)
