@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import json
+import argparse
 
 import matplotlib.pyplot as plt
 
@@ -9,9 +10,10 @@ arg_parser = argparse.ArgumentParser(
     description="A tool to mesasure CO2 impact of internet route"
 )
 arg_parser.add_argument("--source", help="Provide source directory")
-arg_parser.add_argument("-h", "--hops", action="store_true")
-arg_parser.add_argument("-c", "--carbon", action="store_true")
+arg_parser.add_argument("--hops", action="store_true")
+arg_parser.add_argument("--carbon", action="store_true")
 arg_parser.add_argument("--output", help="Provide output file")
+arg_parser.add_argument("--csv", action="store_true")
 
 args = arg_parser.parse_args()
 
@@ -32,12 +34,13 @@ def create_json_output(runs, content):
     return runs
 
 
-def create_csv_output(runs, content):
-    pass
+def create_csv_output(df, output):
+    pd.DataFrame.to_csv(df, output, index=False)
 
 
 def extract_carbon_emission(df):
     carbon_emission = []
+    carbon_emission.append(df.columns.tolist()[0])
 
     for head in df.columns.tolist():
         if head[0] == "Carbon Emission" or head[1] == "Carbon Emission":
@@ -48,6 +51,7 @@ def extract_carbon_emission(df):
 
 def extract_hops(df):
     hops = []
+    hops.append(df.columns.tolist()[0])
 
     for head in df.columns.tolist():
         if head[0] == "Hops" or head[1] == "Hops":
@@ -79,6 +83,7 @@ def export_data(source):
     cols = df.columns.tolist()
     cols = cols[-1:] + cols[:-1]
     df = df[cols]
+    return df
 
 
 if __name__ == "__main__":
@@ -101,3 +106,6 @@ if __name__ == "__main__":
     )
     fig.tight_layout()
     fig.savefig(args.output)
+
+    if args.csv:
+        create_csv_output(df, args.output)
