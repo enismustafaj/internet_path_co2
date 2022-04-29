@@ -6,6 +6,7 @@ import utils
 import matplotlib.pyplot as plt
 
 
+#
 def create_json_output(runs, content):
     for key, value in content.items():
         new_values = [
@@ -15,17 +16,18 @@ def create_json_output(runs, content):
         ]
         if key in runs:
             runs[key] += new_values
-
         else:
             runs[key] = new_values
 
     return runs
 
 
+# Output a csv file from the dataframe
 def create_csv_output(df, output):
     pd.DataFrame.to_csv(df, output, index=False)
 
 
+# Extract carbon intensities from the dataframe
 def extract_carbon_intensities(df):
     carbon_emission = []
     carbon_emission.append(df.columns.tolist()[0])
@@ -37,6 +39,7 @@ def extract_carbon_intensities(df):
     return df[carbon_emission]
 
 
+# Extract hops from the dataframe
 def extract_hops(df):
     hops = []
     hops.append(df.columns.tolist()[0])
@@ -48,16 +51,21 @@ def extract_hops(df):
     return df[hops]
 
 
+# Extract carbon intensities error values from the dataframe
 def extract_carbon_error_val():
     pass
 
 
+# Create a dataframe from the source file
 def create_data_frame(source):
     nr_of_runs = len(os.listdir(source))
+
+    # Set the columns
     main_cols = ["Run " + str(i) for i in range(1, nr_of_runs + 1)]
     sec_cols = ["Hops", "Carbon Emission", "Error Carbon Val"]
     cols = pd.MultiIndex.from_product([main_cols, sec_cols])
 
+    # Process the data from each file
     runs = dict()
     for i, file in enumerate(os.listdir(source)):
         with open(source + "/" + file, "r") as f:
@@ -70,6 +78,7 @@ def create_data_frame(source):
 
     df = pd.DataFrame(values, columns=cols, index=runs.keys())
 
+    # Add the destination column
     df["Destination"] = df.index.to_numpy().flatten()
 
     cols = df.columns.tolist()
@@ -78,11 +87,13 @@ def create_data_frame(source):
     return df
 
 
+# Export the dataframe to a csv file
 def export_data(source, output_file, output_path, type, csv=False):
     df = create_data_frame(source)
 
     utils.create_res_dir(output_path)
 
+    # Check the type of export
     if type == "carbon":
         print("here")
         df = extract_carbon_intensities(df)
