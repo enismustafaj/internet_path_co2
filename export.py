@@ -1,23 +1,9 @@
 import pandas as pd
 import os
 import json
-import argparse
 import utils
 
 import matplotlib.pyplot as plt
-
-
-arg_parser = argparse.ArgumentParser(
-    description="A tool to mesasure CO2 impact of internet route"
-)
-arg_parser.add_argument("--source", help="Provide source directory")
-arg_parser.add_argument("--hops", action="store_true")
-arg_parser.add_argument("--carbon", action="store_true")
-arg_parser.add_argument("--path", help="Provide output path")
-arg_parser.add_argument("--output", help="Provide output file")
-arg_parser.add_argument("--csv", action="store_true")
-
-args = arg_parser.parse_args()
 
 
 def create_json_output(runs, content):
@@ -66,7 +52,7 @@ def extract_carbon_error_val():
     pass
 
 
-def export_data(source):
+def create_data_frame(source):
     nr_of_runs = len(os.listdir(source))
     main_cols = ["Run " + str(i) for i in range(1, nr_of_runs + 1)]
     sec_cols = ["Hops", "Carbon Emission", "Error Carbon Val"]
@@ -92,20 +78,20 @@ def export_data(source):
     return df
 
 
-if __name__ == "__main__":
-    df = export_data(args.source)
-
-    output_path = "./output"
-
-    if args.path:
-        output_path = args.path
+def export_data(source, output_file, output_path, type, csv=False):
+    df = create_data_frame(source)
 
     utils.create_res_dir(output_path)
 
-    if args.carbon:
+    if type == "carbon":
+        print("here")
         df = extract_carbon_intensities(df)
-    elif args.hops:
+    elif type == "hops":
+        print("here")
         df = extract_hops(df)
+    else:
+        print("Invalid type")
+        exit(1)
 
     fig, ax = plt.subplots(1, 1, figsize=(20, 15))
 
@@ -118,7 +104,7 @@ if __name__ == "__main__":
         loc="center",
     )
     fig.tight_layout()
-    fig.savefig(output_path + "/" + args.output)
+    fig.savefig(output_path + "/" + output_file)
 
-    if args.csv:
-        create_csv_output(df, output_path + "/" + args.output)
+    if csv:
+        create_csv_output(df, output_path + "/" + output_file)

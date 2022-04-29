@@ -107,7 +107,7 @@ def get_carbon_intensity(endpoint, state, params=None):
 
 
 # Create the results directory if it does not exist
-def create_res_dir(path="./results"):
+def create_res_dir(path):
     dir_exists = os.path.exists(path)
     if not dir_exists:
         os.mkdir(path)
@@ -125,14 +125,14 @@ def print_results_to_file(results, path="./results", filename=""):
         file.write(json.dumps(results))
 
 
-def traceroute_sites(sites, loop, output, trace_command, state):
+def traceroute_sites(sites, loop, output_file, output_path, trace_command, state):
     website_carbon = dict()
     for i, site in enumerate(sites):
 
         # Check if the site is a valid URL
         # by running a tracerote command
         # and collect all the hops
-        print("Tracerouting ", site, " ...")
+        print("Tracerouting ", site, "...")
         routes = subprocess.run(
             trace_command + [site],
             stdout=subprocess.PIPE,
@@ -195,5 +195,7 @@ def traceroute_sites(sites, loop, output, trace_command, state):
 
         # Print the results to a file
         print_results_to_file(
-            website_carbon, filename="_loop" + str(loop) + "_" + output
+            website_carbon,
+            output_path,
+            filename="_loop" + str(loop) + "_" + output_file,
         )

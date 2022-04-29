@@ -2,9 +2,11 @@ import platform
 import argparse
 import os
 
+import utils
+import export
+
 from dotenv import load_dotenv
 from exceptions import ReadFileException
-import utils
 from token_state import TokenState
 
 load_dotenv()
@@ -16,6 +18,7 @@ arg_parser.add_argument("--source", help="Provide source file of websites")
 arg_parser.add_argument("--command", help="Provide traceroute command")
 arg_parser.add_argument("--loop", help="Provide number of runs")
 arg_parser.add_argument("--output", help="Provide output file")
+arg_parser.add_argument("--export", help="Export results to csv")
 
 
 args = arg_parser.parse_args()
@@ -39,7 +42,8 @@ if __name__ == "__main__":
             print(e)
             exit(1)
     else:
-        sites = utils.read_csv_file("./topsites.txt")
+        print("No source file provided")
+        exit(1)
 
     if args.loop:
         loop = int(args.loop)
@@ -51,6 +55,8 @@ if __name__ == "__main__":
     else:
         output_file = ""
 
+    output_path = "./result"
+
     tokens = [
         os.getenv("CO2_SIGNAL_API_KEY"),
         os.getenv("CO2_SIGNAL_API_KEY2"),
@@ -61,4 +67,9 @@ if __name__ == "__main__":
 
     for i in range(loop):
 
-        utils.traceroute_sites(sites, i + 1, output_file, trace_command, state)
+        utils.traceroute_sites(
+            sites, i + 1, output_file, output_path, trace_command, state
+        )
+
+    if args.export:
+        export.export_data(output_path, output_file, output_path, args.export, True)
