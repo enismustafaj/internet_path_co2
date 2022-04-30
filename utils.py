@@ -43,8 +43,10 @@ def read_csv_file(source_file):
 
 # Check if the file has a header
 def check_header(file):
-    first = file.read(1)
-    return first in "abcdefghijklmopqrstuvwxyz"
+    first = file.readline()
+    if re.match(constants.URL_REGEX, first) or re.match(constants.IP_V4_REGEX, first):
+        return False
+    return True
 
 
 def get_location_from_ip(endpoint, headers=None, params=None):
