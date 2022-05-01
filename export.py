@@ -6,7 +6,7 @@ import utils
 import matplotlib.pyplot as plt
 
 
-#
+# Create a json output from the dataframe
 def create_json_output(runs, content):
     for key, value in content.items():
         new_values = [
@@ -27,33 +27,16 @@ def create_csv_output(df, output):
     pd.DataFrame.to_csv(df, output, index=False)
 
 
-# Extract carbon intensities from the dataframe
-def extract_carbon_intensities(df):
-    carbon_emission = []
-    carbon_emission.append(df.columns.tolist()[0])
-
-    for head in df.columns.tolist():
-        if head[0] == "Carbon Emission" or head[1] == "Carbon Emission":
-            carbon_emission.append(head)
-
-    return df[carbon_emission]
-
-
-# Extract hops from the dataframe
-def extract_hops(df):
+# Extract carbon intensities error values from the dataframe
+def extract_columns(df, column_name):
     hops = []
     hops.append(df.columns.tolist()[0])
 
     for head in df.columns.tolist():
-        if head[0] == "Hops" or head[1] == "Hops":
+        if head[0] == column_name or head[1] == column_name:
             hops.append(head)
 
     return df[hops]
-
-
-# Extract carbon intensities error values from the dataframe
-def extract_carbon_error_val():
-    pass
 
 
 # Create a dataframe from the source file
@@ -95,16 +78,16 @@ def export_data(source, output_file, output_path, type, csv=False):
 
     # Check the type of export
     if type == "carbon":
-        print("here")
-        df = extract_carbon_intensities(df)
+        df = extract_columns(df, "Carbon Emission")
     elif type == "hops":
-        print("here")
-        df = extract_hops(df)
+        df = extract_columns(df, "Hops")
+    elif type == "carbon_error":
+        df = extract_columns(df, "Error Carbon Val")
     else:
         print("Invalid type")
         exit(1)
 
-    fig, ax = plt.subplots(1, 1, figsize=(20, 15))
+    fig, ax = plt.subplots(1, 1, figsize=(15, 15))
 
     fig.patch.set_visible(False)
     ax.axis("off")

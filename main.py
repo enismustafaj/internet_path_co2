@@ -25,33 +25,10 @@ args = arg_parser.parse_args()
 
 if __name__ == "__main__":
 
-    website_carbon = dict()
-
-    # Set the trace command
-    if args.command:
-        trace_command = args.command.split(" ")
-    else:
-        if platform.system() == "Windows":
-            trace_command = ["tracert"]
-        else:
-            trace_command = ["traceroute"]
-
     # Check if the source file is provided
-    if args.source:
-        try:
-            sites = utils.read_csv_file(args.source)
-        except ReadFileException as e:
-            print(e)
-            exit(1)
-    else:
+    if not args.source:
         print("No source file provided")
         exit(1)
-
-    # Set the number of runs
-    if args.loop:
-        loop = int(args.loop)
-    else:
-        loop = 1
 
     if args.output:
         output_file = args.output
@@ -60,22 +37,45 @@ if __name__ == "__main__":
 
     output_path = "./result"
 
-    # Add tokens and initialize the token state
-    tokens = [
-        os.getenv("CO2_SIGNAL_API_KEY"),
-        os.getenv("CO2_SIGNAL_API_KEY2"),
-        os.getenv("CO2_SIGNAL_API_KEY3"),
-        os.getenv("CO2_SIGNAL_API_KEY4"),
-    ]
-    state = TokenState(tokens, 0)
-
-    # Loop through the input sites
-    for i in range(loop):
-
-        utils.traceroute_sites(
-            sites, i + 1, output_file, output_path, trace_command, state
-        )
-
-    # Export the results
     if args.export:
-        export.export_data(output_path, output_file, output_path, args.export, True)
+        export.export_data(args.source, output_file, output_path, args.export, True)
+
+    else:
+        website_carbon = dict()
+
+        try:
+            sites = utils.read_csv_file(args.source)
+        except ReadFileException as e:
+            print(e)
+            exit(1)
+
+        # Set the trace command
+        if args.command:
+            trace_command = args.command.split(" ")
+        else:
+            if platform.system() == "Windows":
+                trace_command = ["tracert"]
+            else:
+                trace_command = ["traceroute"]
+
+        # Set the number of runs
+        if args.loop:
+            loop = int(args.loop)
+        else:
+            loop = 1
+
+        # Add tokens and initialize the token state
+        tokens = [
+            os.getenv("CO2_SIGNAL_API_KEY"),
+            os.getenv("CO2_SIGNAL_API_KEY2"),
+            os.getenv("CO2_SIGNAL_API_KEY3"),
+            os.getenv("CO2_SIGNAL_API_KEY4"),
+        ]
+        state = TokenState(tokens, 0)
+
+        # Loop through the input sites
+        for i in range(loop):
+
+            utils.traceroute_sites(
+                sites, i + 1, output_file, output_path, trace_command, state
+            )
