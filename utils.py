@@ -17,7 +17,7 @@ def parse_output(output):
     if len(hops) == 0:
         return []
 
-    if hops[0] == hops[len(hops) - 1]:
+    if hops[0] == hops[len(hops) - 1] and len(hops) > 1:
         return hops[1:]
     else:
         return hops
@@ -44,7 +44,11 @@ def read_csv_file(source_file):
 # Check if the file has a header
 def check_header(file):
     first = file.readline()
-    if re.match(constants.URL_REGEX, first) or re.match(constants.IP_V4_REGEX, first):
+    print(re.findall(constants.IP_V4_REGEX, first))
+    if (
+        len(re.findall(constants.URL_REGEX, first)) > 0
+        or len(re.findall(constants.IP_V4_REGEX, first)) > 0
+    ):
         return False
     return True
 
