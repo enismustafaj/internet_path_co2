@@ -9,3 +9,11 @@ CO2_SIGNAL_ENDPOINT = "https://api.co2signal.com/v1/latest"
 IP_GEOLOCATION_ENDPOINT = "https://api.ipgeolocation.io/ipgeo"
 WHO_IS_ENDPOINT = "http://rest.db.ripe.net/geolocatioN"
 BID_DATA_CLOUD_ENDPOINT = "https://api.bigdatacloud.net/data/ip-geolocation"
+
+
+GRAPH_LABELS = {
+    "x_label": "Destinations",
+    "y_label1": "Carbon Intensity (gCO2/KWh)",
+    "y_label2": "Hops",
+    "y_label3": "# Error values",
+}

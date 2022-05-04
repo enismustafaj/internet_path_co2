@@ -1,8 +1,10 @@
-import pandas as pd
 import os
 import json
 import utils
+import constants
 
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -70,6 +72,33 @@ def create_data_frame(source):
     return df
 
 
+# Plot the graph
+def plot_graph(df, graph_file, type):
+
+    df["avg. round1"] = df.iloc[:, 1:4].mean(axis=1)
+    df["avg. round2"] = df.iloc[:, 4:7].mean(axis=1)
+    dest = df.iloc[:, 0]
+
+    X_axis = np.arange(len(dest))
+
+    if type == "carbon":
+        y_label = constants.GRAPH_LABELS["y_label1"]
+    elif type == "hops":
+        y_label = constants.GRAPH_LABELS["y_label2"]
+
+    else:
+        y_label = constants.GRAPH_LABELS["y_label3"]
+
+    plt.figure(figsize=(15, 15))
+    plt.xticks(X_axis, dest, rotation=90)
+    plt.xlabel(constants.GRAPH_LABELS["x_label"])
+    plt.ylabel(y_label)
+    plt.bar(X_axis - 0.2, df["avg. round1"], 0.4, label="Round 1")
+    plt.bar(X_axis + 0.2, df["avg. round2"], 0.4, label="Round 2")
+    plt.show()
+    plt.savefig(graph_file + ".png", dpi=300, bbox_inches="tight")
+
+
 # Export the dataframe to a csv file
 def export_data(source, output_file, output_path, type, csv=False):
     df = create_data_frame(source)
@@ -87,6 +116,7 @@ def export_data(source, output_file, output_path, type, csv=False):
         print("Invalid type")
         exit(1)
 
+    plot_graph(df, output_file, type)
     fig, ax = plt.subplots(1, 1, figsize=(15, 15))
 
     fig.patch.set_visible(False)

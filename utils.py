@@ -30,8 +30,10 @@ def read_csv_file(source_file):
         with open(source_file, "r") as file:
             sites = []
             rows = csv.reader(file, delimiter=",")
+            print(rows)
             # Skip the header if it exists
             if check_header(file):
+                print("there is header here")
                 next(rows, None)
             for row in rows:
                 sites.append(row[0])
@@ -43,11 +45,10 @@ def read_csv_file(source_file):
 
 # Check if the file has a header
 def check_header(file):
-    first = file.readline()
-    print(re.findall(constants.IP_V4_REGEX, first))
+    first_line = file.readline()
     if (
-        len(re.findall(constants.URL_REGEX, first)) > 0
-        or len(re.findall(constants.IP_V4_REGEX, first)) > 0
+        len(re.findall(constants.URL_REGEX, first_line)) > 0
+        or len(re.findall(constants.IP_V4_REGEX, first_line)) > 0
     ):
         return False
     return True
@@ -92,15 +93,14 @@ def get_carbon_intensity(endpoint, state, params=None):
     try:
         response = requests.get(endpoint, headers=headers, params=params)
         response = response.json()
-        print(response)
     except requests.exceptions.RequestException as e:
         raise APIFailException(e)
 
     if "message" in response:
-        # Sleep for 35 seconds to avoid hitting the API too quickly
+        # Sleep for 25 seconds to avoid hitting the API too quickly
         if response["message"] == "API rate limit exceeded":
             state.update_token_state()
-            sleep(35)
+            sleep(25)
             return get_carbon_intensity(endpoint, state, params=params)
         else:
             raise APIFailException(response["message"])
@@ -180,13 +180,13 @@ def traceroute_sites(sites, loop, output_file, output_path, trace_command, state
         for i, location in enumerate(geolocations):
             if not len(location) == 0:
                 try:
-                    carbon_intensities.append(
-                        get_carbon_intensity(
-                            constants.CO2_SIGNAL_ENDPOINT,
-                            state,
-                            params={"lat": location[0], "lon": location[1]},
-                        )
+                    carbon_intensity = get_carbon_intensity(
+                        constants.CO2_SIGNAL_ENDPOINT,
+                        state,
+                        params={"lat": location[0], "lon": location[1]},
                     )
+                    carbon_intensities.append(carbon_intensity)
+                    print(location, ": ", carbon_intensity)
                 except APIFailException as e:
                     carbon_intensities.append(-1)
                     print(e)
