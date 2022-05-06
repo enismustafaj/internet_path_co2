@@ -30,11 +30,10 @@ def read_csv_file(source_file):
         with open(source_file, "r") as file:
             sites = []
             rows = csv.reader(file, delimiter=",")
-            print(rows)
             # Skip the header if it exists
             if check_header(file):
-                print("there is header here")
-                next(rows, None)
+                # next(rows, None)
+                pass
             for row in rows:
                 sites.append(row[0])
 
@@ -97,10 +96,10 @@ def get_carbon_intensity(endpoint, state, params=None):
         raise APIFailException(e)
 
     if "message" in response:
-        # Sleep for 25 seconds to avoid hitting the API too quickly
+        # Sleep for 15 seconds to avoid hitting the API too quickly
         if response["message"] == "API rate limit exceeded":
             state.update_token_state()
-            sleep(25)
+            sleep(15)
             return get_carbon_intensity(endpoint, state, params=params)
         else:
             raise APIFailException(response["message"])
@@ -159,12 +158,10 @@ def traceroute_sites(sites, loop, output_file, output_path, trace_command, state
         for hop in hops:
             try:
                 location, country_code = get_location_from_ip(
-                    constants.BID_DATA_CLOUD_ENDPOINT,
+                    constants.IP_DATA_ENDPOINT % hop,
                     None,
                     {
-                        "key": os.getenv("BIG_DATA_CLOUD_API_KEY"),
-                        "ip": hop,
-                        "locality_language": "en",
+                        "api-key": os.getenv("IP_DATA_API_KEY"),
                     },
                 )
                 geolocations.append(location)

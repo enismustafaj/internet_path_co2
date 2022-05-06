@@ -38,7 +38,9 @@ if __name__ == "__main__":
     output_path = "./result"
 
     if args.export:
-        export.export_data(args.source, output_file, output_path, args.export, True)
+        export.export_data(
+            args.source, output_file, output_path, args.export, False, True
+        )
 
     else:
         website_carbon = dict()

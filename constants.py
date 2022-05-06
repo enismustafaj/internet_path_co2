@@ -10,10 +10,19 @@ IP_GEOLOCATION_ENDPOINT = "https://api.ipgeolocation.io/ipgeo"
 WHO_IS_ENDPOINT = "http://rest.db.ripe.net/geolocatioN"
 BID_DATA_CLOUD_ENDPOINT = "https://api.bigdatacloud.net/data/ip-geolocation"
 
-
+# Graph labels
 GRAPH_LABELS = {
     "x_label": "Destinations",
-    "y_label1": "Carbon Intensity (gCO2/KWh)",
-    "y_label2": "Hops",
-    "y_label3": "# Error values",
+    "carbon": "Carbon Intensity (gCO2/KWh)",
+    "hops": "Hops",
+    "carbon_error": "# Carbon Error values",
+    "lookup_error": "# Hops Error values",
+}
+
+# Export types
+EXPORT_TYPE = {
+    "carbon": "Carbon Emission",
+    "hops": "Hops",
+    "carbon_error": "Error Carbon Val",
+    "lookup_error": "Error lookup",
 }

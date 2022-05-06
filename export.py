@@ -2,6 +2,7 @@ import os
 import json
 import utils
 import constants
+import math
 
 import pandas as pd
 import numpy as np
@@ -15,6 +16,7 @@ def create_json_output(runs, content):
             len(value["hops"]),
             sum(value["carbon_intensities"]),
             len([x for x in value["carbon_intensities"] if x == -1]),
+            len([x for x in value["countries"] if x == ""]),
         ]
         if key in runs:
             runs[key] += new_values
@@ -29,7 +31,7 @@ def create_csv_output(df, output):
     pd.DataFrame.to_csv(df, output, index=False)
 
 
-# Extract carbon intensities error values from the dataframe
+# Extract column types from the dataframe
 def extract_columns(df, column_name):
     hops = []
     hops.append(df.columns.tolist()[0])
@@ -47,7 +49,7 @@ def create_data_frame(source):
 
     # Set the columns
     main_cols = ["Run " + str(i) for i in range(1, nr_of_runs + 1)]
-    sec_cols = ["Hops", "Carbon Emission", "Error Carbon Val"]
+    sec_cols = ["Hops", "Carbon Emission", "Error Carbon Val", "Error lookup"]
     cols = pd.MultiIndex.from_product([main_cols, sec_cols])
 
     # Process the data from each file
@@ -73,26 +75,32 @@ def create_data_frame(source):
 
 
 # Plot the graph
-def plot_graph(df, graph_file, type):
+def plot_graph(df, graph_file, type, sort=False):
 
-    df["avg. round1"] = df.iloc[:, 1:4].mean(axis=1)
-    df["avg. round2"] = df.iloc[:, 4:7].mean(axis=1)
+    if type == "lookup_error":
+        df["avg. round1"] = df.iloc[:, 1:4].sum(axis=1)
+        df["avg. round2"] = df.iloc[:, 4:7].sum(axis=1)
+    else:
+        df["avg. round1"] = df.iloc[:, 1:4].mean(axis=1)
+        df["avg. round2"] = df.iloc[:, 4:7].mean(axis=1)
     dest = df.iloc[:, 0]
+    if sort:
+        df = df.sort_values(by=("avg. round2", ""))
+
+    max1 = df[("avg. round1", "")].max()
+    max2 = df[("avg. round2", "")].max()
+    max_value = max(max1, max2)
 
     X_axis = np.arange(len(dest))
 
-    if type == "carbon":
-        y_label = constants.GRAPH_LABELS["y_label1"]
-    elif type == "hops":
-        y_label = constants.GRAPH_LABELS["y_label2"]
-
-    else:
-        y_label = constants.GRAPH_LABELS["y_label3"]
+    y_label = constants.GRAPH_LABELS[type]
 
     plt.figure(figsize=(15, 15))
     plt.xticks(X_axis, dest, rotation=90)
     plt.xlabel(constants.GRAPH_LABELS["x_label"])
     plt.ylabel(y_label)
+    if type == "lookup_error":
+        plt.ylim([0, math.ceil(max_value) + 1])
     plt.bar(X_axis - 0.2, df["avg. round1"], 0.4, label="Round 1")
     plt.bar(X_axis + 0.2, df["avg. round2"], 0.4, label="Round 2")
     plt.show()
@@ -100,23 +108,21 @@ def plot_graph(df, graph_file, type):
 
 
 # Export the dataframe to a csv file
-def export_data(source, output_file, output_path, type, csv=False):
+def export_data(source, output_file, output_path, type, sort, csv=False):
     df = create_data_frame(source)
+    corr = df.transpose()
+    corr.to_csv(output_file + "_corr.csv")
 
     utils.create_res_dir(output_path)
 
     # Check the type of export
-    if type == "carbon":
-        df = extract_columns(df, "Carbon Emission")
-    elif type == "hops":
-        df = extract_columns(df, "Hops")
-    elif type == "carbon_error":
-        df = extract_columns(df, "Error Carbon Val")
+    if type in constants.EXPORT_TYPE:
+        df = extract_columns(df, constants.EXPORT_TYPE[type])
     else:
         print("Invalid type")
         exit(1)
 
-    plot_graph(df, output_file, type)
+    plot_graph(df, output_file, type, sort=sort)
     fig, ax = plt.subplots(1, 1, figsize=(15, 15))
 
     fig.patch.set_visible(False)
