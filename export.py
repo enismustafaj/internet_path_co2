@@ -104,14 +104,12 @@ def plot_graph(df, graph_file, type, sort=False):
     plt.bar(X_axis - 0.2, df["avg. round1"], 0.4, label="Round 1")
     plt.bar(X_axis + 0.2, df["avg. round2"], 0.4, label="Round 2")
     plt.show()
-    plt.savefig(graph_file + ".png", dpi=300, bbox_inches="tight")
+    plt.savefig(graph_file + ".pdf", dpi=300, bbox_inches="tight")
 
 
 # Export the dataframe to a csv file
 def export_data(source, output_file, output_path, type, sort, csv=False):
     df = create_data_frame(source)
-    corr = df.transpose()
-    corr.to_csv(output_file + "_corr.csv")
 
     utils.create_res_dir(output_path)
 
