@@ -103,6 +103,7 @@ def plot_graph(df, graph_file, type, sort=False):
         plt.ylim([0, math.ceil(max_value) + 1])
     plt.bar(X_axis - 0.2, df["avg. round1"], 0.4, label="Round 1")
     plt.bar(X_axis + 0.2, df["avg. round2"], 0.4, label="Round 2")
+    plt.legend()
     plt.show()
     plt.savefig(graph_file + ".pdf", dpi=300, bbox_inches="tight")
 
