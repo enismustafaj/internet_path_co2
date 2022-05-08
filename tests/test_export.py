@@ -5,6 +5,7 @@ import os
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 import export
+import pandas as pd
 
 
 class TestExport:
@@ -23,3 +24,9 @@ class TestExport:
         runs = {}
         runs = export.create_json_output(runs, content)
         assert runs == {"1": [3, 6, 0, 0]}
+
+    def test_create_csv_output(self, tmp_path):
+        df = pd.DataFrame([[1, 2, 3], [4, 5, 6]], columns=["A", "B", "C"])
+        output = tmp_path / "test.csv"
+        export.create_csv_output(df, output)
+        assert output.exists()
