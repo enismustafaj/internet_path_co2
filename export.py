@@ -78,11 +78,15 @@ def create_data_frame(source):
 def plot_graph(df, graph_file, type, sort=False):
 
     if type == "lookup_error":
-        df["avg. round1"] = df.iloc[:, 1:4].sum(axis=1)
-        df["avg. round2"] = df.iloc[:, 4:7].sum(axis=1)
+        df["sum. round1"] = df.iloc[:, 1:4].sum(axis=1)
+        df["sum. round2"] = df.iloc[:, 4:7].sum(axis=1)
     else:
         df["avg. round1"] = df.iloc[:, 1:4].mean(axis=1)
         df["avg. round2"] = df.iloc[:, 4:7].mean(axis=1)
+
+    df["difference"] = abs(df["avg. round1"] - df["avg. round2"])
+    print(df["difference"].max())
+    print(df["difference"].mean())
     dest = df.iloc[:, 0]
     if sort:
         df = df.sort_values(by=("avg. round2", ""))
