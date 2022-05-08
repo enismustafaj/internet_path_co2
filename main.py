@@ -35,14 +35,13 @@ if __name__ == "__main__":
     else:
         output_file = ""
 
-    output_path = "./result"
-
     if args.export:
-        export.export_data(
-            args.source, output_file, output_path, args.export, False, True
-        )
+        output_path = "./data"
+        export.export_data(args.source, output_file, output_path, args.export, True)
 
     else:
+
+        output_path = "./result"
         website_carbon = dict()
 
         try:

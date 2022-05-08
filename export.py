@@ -1,3 +1,4 @@
+from operator import index
 import os
 import json
 import utils
@@ -74,8 +75,7 @@ def create_data_frame(source):
     return df
 
 
-# Plot the graph
-def plot_graph(df, graph_file, type, sort=False):
+def calculate_avg_round(df, graph_file, output_path, type):
     rounds = ["Destination"]
     k = 1
     if type == "lookup_error":
@@ -92,15 +92,21 @@ def plot_graph(df, graph_file, type, sort=False):
     df["range"] = abs(df.max(axis=1) - df.min(axis=1))
 
     # output the rounds to csv file
-    df.to_csv(graph_file + "_rounds" + ".csv")
+    df.to_csv(output_path + "/" + graph_file + "_rounds" + ".csv", index=False)
 
     print("Maximum difference: " + str(df["range"].max()))
     print("Mean difference: " + str(df["range"].mean()))
 
     # get the destinations and the range
     new_df = df[["Destination", "range"]]
-    new_df = new_df.sort_values(by="range", ascending=sort)
-    new_df.to_csv(graph_file + "_ranges" + ".csv", index=False)
+    new_df = new_df.sort_values(by="range", ascending=True)
+    new_df.to_csv(output_path + "/" + graph_file + "_ranges" + ".csv", index=False)
+
+    plot_graph(df, graph_file, output_path, type)
+
+
+# Plot the graph
+def plot_graph(df, graph_file, output_path, type):
 
     dest = df.iloc[:, 0]
 
@@ -120,11 +126,11 @@ def plot_graph(df, graph_file, type, sort=False):
     plt.bar(X_axis + 0.2, df["avg. round2"], 0.4, label="Round 2")
     plt.legend()
     plt.show()
-    plt.savefig(graph_file + ".pdf", dpi=300, bbox_inches="tight")
+    plt.savefig(output_path + "/" + graph_file + ".pdf", dpi=300, bbox_inches="tight")
 
 
 # Export the dataframe to a csv file
-def export_data(source, output_file, output_path, type, sort, csv=False):
+def export_data(source, output_file, output_path, type, csv=False):
     df = create_data_frame(source)
 
     utils.create_res_dir(output_path)
@@ -136,7 +142,7 @@ def export_data(source, output_file, output_path, type, sort, csv=False):
         print("Invalid type")
         exit(1)
 
-    plot_graph(df, output_file, type, sort=sort)
+    calculate_avg_round(df, output_file, output_path, type)
     fig, ax = plt.subplots(1, 1, figsize=(15, 15))
 
     fig.patch.set_visible(False)
