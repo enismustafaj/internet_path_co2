@@ -76,24 +76,35 @@ def create_data_frame(source):
 
 # Plot the graph
 def plot_graph(df, graph_file, type, sort=False):
-
+    rounds = ["Destination"]
+    k = 1
     if type == "lookup_error":
-        df["sum. round1"] = df.iloc[:, 1:4].sum(axis=1)
-        df["sum. round2"] = df.iloc[:, 4:7].sum(axis=1)
+        for i in range(1, df.shape[1], 3):
+            rounds.append("avg. round" + str(k))
+            df["avg. round" + str(i)] = df.iloc[:, i : i + 3].sum(axis=1)
     else:
-        df["avg. round1"] = df.iloc[:, 1:4].mean(axis=1)
-        df["avg. round2"] = df.iloc[:, 4:7].mean(axis=1)
 
-    df["difference"] = abs(df["avg. round1"] - df["avg. round2"])
-    print(df["difference"].max())
-    print(df["difference"].mean())
+        for i in range(1, df.shape[1], 3):
+            rounds.append("avg. round" + str(k))
+            df["avg. round" + str(k)] = df.iloc[:, i : i + 3].mean(axis=1)
+            k += 1
+    df = df[rounds]
+    df["range"] = abs(df.max(axis=1) - df.min(axis=1))
+
+    # output the rounds to csv file
+    df.to_csv(graph_file + "_rounds" + ".csv")
+
+    print("Maximum difference: " + str(df["range"].max()))
+    print("Mean difference: " + str(df["range"].mean()))
+
+    # get the destinations and the range
+    new_df = df[["Destination", "range"]]
+    new_df = new_df.sort_values(by="range", ascending=sort)
+    new_df.to_csv(graph_file + "_ranges" + ".csv", index=False)
+
     dest = df.iloc[:, 0]
-    if sort:
-        df = df.sort_values(by=("avg. round2", ""))
 
-    max1 = df[("avg. round1", "")].max()
-    max2 = df[("avg. round2", "")].max()
-    max_value = max(max1, max2)
+    max_value = df.max(axis=1)
 
     X_axis = np.arange(len(dest))
 
@@ -140,4 +151,4 @@ def export_data(source, output_file, output_path, type, sort, csv=False):
     fig.savefig(output_path + "/" + output_file)
 
     if csv:
-        create_csv_output(df, output_path + "/" + output_file)
+        create_csv_output(df, output_path + "/" + output_file + ".csv")
