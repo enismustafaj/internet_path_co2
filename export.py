@@ -81,7 +81,8 @@ def calculate_avg_round(df, graph_file, output_path, type):
     if type == "lookup_error":
         for i in range(1, df.shape[1], 3):
             rounds.append("avg. round" + str(k))
-            df["avg. round" + str(i)] = df.iloc[:, i : i + 3].sum(axis=1)
+            df["avg. round" + str(k)] = df.iloc[:, i : i + 3].sum(axis=1)
+            k += 1
     else:
 
         for i in range(1, df.shape[1], 3):
@@ -110,8 +111,6 @@ def plot_graph(df, graph_file, output_path, type):
 
     dest = df.iloc[:, 0]
 
-    max_value = df.max(axis=1)
-
     X_axis = np.arange(len(dest))
 
     y_label = constants.GRAPH_LABELS[type]
@@ -120,8 +119,6 @@ def plot_graph(df, graph_file, output_path, type):
     plt.xticks(X_axis, dest, rotation=90)
     plt.xlabel(constants.GRAPH_LABELS["x_label"])
     plt.ylabel(y_label)
-    if type == "lookup_error":
-        plt.ylim([0, math.ceil(max_value) + 1])
     plt.bar(X_axis - 0.2, df["avg. round1"], 0.4, label="Round 1")
     plt.bar(X_axis + 0.2, df["avg. round2"], 0.4, label="Round 2")
     plt.legend()
