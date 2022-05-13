@@ -12,15 +12,23 @@ from datetime import datetime
 
 # Parse the output of the traceroute command
 def parse_output(output):
-    hops = re.findall(constants.IP_V4_REGEX, output)
+    hops = []
+    no_router_detected = 0
+    # Split the output by newline
+    output = output.split("\n")[1:]
+    for i, line in enumerate(output):
+        if len(re.findall(constants.IP_V4_REGEX, line)) > 0:
+            hops += re.findall(constants.IP_V4_REGEX, line)
+        elif "???" in line:
+            no_router_detected += 1
 
     if len(hops) == 0:
-        return []
+        return hops, no_router_detected
 
     if hops[0] == hops[len(hops) - 1] and len(hops) > 1:
-        return hops[1:]
+        return hops[1:], no_router_detected
     else:
-        return hops
+        return hops, no_router_detected
 
 
 # Read the destinations from a file
@@ -149,7 +157,7 @@ def traceroute_sites(sites, loop, output_file, output_path, trace_command, state
             print(f"Traceroute for {site} failed")
             continue
 
-        hops = parse_output(routes.stdout)
+        hops, unknown_routers = parse_output(routes.stdout)
 
         geolocations = []
         countries = []
@@ -193,6 +201,7 @@ def traceroute_sites(sites, loop, output_file, output_path, trace_command, state
             "hops": hops,
             "carbon_intensities": carbon_intensities,
             "countries": countries,
+            "unknown_routers": unknown_routers,
         }
         print("Traceroute for ", site, " completed")
 

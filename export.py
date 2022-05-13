@@ -1,10 +1,7 @@
-from operator import index
 import os
 import json
-from unicodedata import decimal
 import utils
 import constants
-import math
 
 import pandas as pd
 import numpy as np
@@ -81,27 +78,28 @@ def calculate_avg_round(df, graph_file, output_path, type):
     k = 1
     if type == "lookup_error":
         for i in range(1, df.shape[1], 3):
-            rounds.append("round" + str(k))
+            rounds.append("Round" + str(k))
             df["round" + str(k)] = df.iloc[:, i : i + 3].sum(axis=1)
             k += 1
     else:
 
         for i in range(1, df.shape[1], 3):
-            rounds.append("round" + str(k))
-            df["round" + str(k)] = df.iloc[:, i : i + 3].mean(axis=1).round(decimals=2)
+            rounds.append("Round" + str(k))
+            df["Round" + str(k)] = df.iloc[:, i : i + 3].mean(axis=1).round(decimals=2)
             k += 1
     df = df[rounds]
-    df["range"] = abs(df.max(axis=1) - df.min(axis=1)).round(decimals=2)
+    df["Range"] = abs(df.max(axis=1) - df.min(axis=1)).round(decimals=2)
+
+    df = df.sort_values(by="Range", ascending=False)
 
     # output the rounds to csv file
     df.to_csv(output_path + "/" + graph_file + "_rounds" + ".csv", index=False)
 
-    print("Maximum difference: " + str(df["range"].max()))
-    print("Mean difference: " + str(df["range"].mean()))
+    print("Maximum difference: " + str(df["Range"].max()))
+    print("Mean difference: " + str(df["Range"].mean()))
 
     # get the destinations and the range
-    new_df = df[["Destination", "range"]]
-    new_df = new_df.sort_values(by="range", ascending=True)
+    new_df = df[["Destination", "Range"]]
     new_df.to_csv(output_path + "/" + graph_file + "_ranges" + ".csv", index=False)
 
     plot_graph(df, graph_file, output_path, type)
@@ -120,8 +118,8 @@ def plot_graph(df, graph_file, output_path, type):
     plt.xticks(X_axis, dest, rotation=90)
     plt.xlabel(constants.GRAPH_LABELS["x_label"])
     plt.ylabel(y_label)
-    plt.bar(X_axis - 0.2, df["round1"], 0.4, label="Round 1")
-    plt.bar(X_axis + 0.2, df["round2"], 0.4, label="Round 2")
+    plt.bar(X_axis - 0.2, df["Round1"], 0.4, label="Round 1")
+    plt.bar(X_axis + 0.2, df["Round2"], 0.4, label="Round 2")
     plt.legend()
     plt.show()
     plt.savefig(output_path + "/" + graph_file + ".pdf", dpi=300, bbox_inches="tight")
