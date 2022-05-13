@@ -19,6 +19,11 @@ def parse_output(output):
     for i, line in enumerate(output):
         if len(re.findall(constants.IP_V4_REGEX, line)) > 0:
             hops += re.findall(constants.IP_V4_REGEX, line)
+
+        # If the router is not detected, increment the counter
+        # This is applied only to mtr traceroute
+        # The idea of this function is to create a general
+        # parser for all traceroute commands (implemented later than measurements)
         elif "???" in line:
             no_router_detected += 1
 
