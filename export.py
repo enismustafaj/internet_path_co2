@@ -108,8 +108,8 @@ def calculate_avg_round(df, graph_file, output_path, type):
     print("Mean difference: " + str(df["Range"].mean()))
 
     # get the destinations and the range
-    new_df = df[["Destination", "Range"]]
-    new_df.to_csv(output_path + "/" + graph_file + "_ranges" + ".csv", index=False)
+    # new_df = df[["Destination", "Range"]]
+    # new_df.to_csv(output_path + "/" + graph_file + "_ranges" + ".csv", index=False)
 
     plot_graph(df, graph_file, output_path, type)
 
@@ -159,7 +159,7 @@ def export_data(source, output_file, output_path, type, csv=False):
         loc="center",
     )
     fig.tight_layout()
-    fig.savefig(output_path + "/" + output_file)
+    # fig.savefig(output_path + "/" + output_file)
 
-    if csv:
-        create_csv_output(df, output_path + "/" + output_file + ".csv")
+    # if csv:
+    #     create_csv_output(df, output_path + "/" + output_file + ".csv")
