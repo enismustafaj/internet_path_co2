@@ -16,6 +16,7 @@ def create_json_output(runs, content):
             sum(value["carbon_intensities"]),
             len([x for x in value["carbon_intensities"] if x == -1]),
             len([x for x in value["countries"] if x == ""]),
+            value["unknown_routers"],
         ]
         if key in runs:
             runs[key] += new_values
@@ -50,7 +51,13 @@ def create_data_frame(source):
 
     # Set the columns
     main_cols = ["Run " + str(i) for i in range(1, nr_of_runs + 1)]
-    sec_cols = ["Hops", "Carbon Emission", "Error Carbon Val", "Error lookup"]
+    sec_cols = [
+        "Hops",
+        "Carbon Emission",
+        "Error Carbon Val",
+        "Error lookup",
+        "Unknown Routers",
+    ]
     cols = pd.MultiIndex.from_product([main_cols, sec_cols])
 
     # Process the data from each file
