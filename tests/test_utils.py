@@ -6,6 +6,10 @@ import utils
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 
+from exceptions import APIFailException
+from token_state import TokenState
+
+
 class TestUtils:
     def test_csv_header(self, tmp_path):
         d = tmp_path / "sub"
@@ -49,3 +53,12 @@ class TestUtils:
         hop, no_hop = utils.parse_output(output)
         assert len(hop) > 0
         assert no_hop == 1
+
+    def test_get_location_from_ip(self):
+        with pytest.raises(APIFailException):
+            utils.get_location_from_ip("")
+
+    def test_get_carbon_intensity(self):
+        api_state = TokenState(["token"], 0)
+        with pytest.raises(APIFailException):
+            utils.get_carbon_intensity("", api_state)
