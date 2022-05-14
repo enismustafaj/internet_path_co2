@@ -36,9 +36,11 @@ def extract_columns(df, column_name):
     hops.append(df.columns.tolist()[0])
 
     for head in df.columns.tolist():
-        if head[0] == column_name or head[1] == column_name:
+        if head == column_name:
             hops.append(head)
-
+        elif type(head) == tuple:
+            if head[0] == column_name or head[1] == column_name:
+                hops.append(head)
     return df[hops]
 
 

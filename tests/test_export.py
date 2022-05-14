@@ -30,3 +30,17 @@ class TestExport:
         output = tmp_path / "test.csv"
         export.create_csv_output(df, output)
         assert output.exists()
+
+    def test_extract_columns(self):
+        df = pd.DataFrame(
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+                [10, 11, 12],
+                [13, 14, 15],
+            ],
+            columns=["A", "B", "C"],
+        )
+        cols = export.extract_columns(df, "B")
+        assert cols.columns.tolist() == ["A", "B"]
