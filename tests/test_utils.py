@@ -41,6 +41,11 @@ class TestUtils:
         assert d.exists()
 
     def test_parse_output(self):
-        assert utils.parse_output("") == []
-        ip_addresses = ["111.123.123.13", "112.112.11.2"]
-        assert len(utils.parse_output(" ".join(ip_addresses))) > 0
+        hop, no_hop = utils.parse_output("")
+        assert hop == []
+        assert no_hop == 0
+        ip_addresses = ["111.123.123.13", "112.112.11.2", "\n", "???"]
+        output = "\n".join(ip_addresses)
+        hop, no_hop = utils.parse_output(output)
+        assert len(hop) > 0
+        assert no_hop == 1
