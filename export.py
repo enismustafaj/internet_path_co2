@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# TODO: Add unknown routers to the graph
+
 # Create a json output from the dataframe
 def create_json_output(runs, content):
     for key, value in content.items():
@@ -16,7 +18,6 @@ def create_json_output(runs, content):
             sum(value["carbon_intensities"]),
             len([x for x in value["carbon_intensities"] if x == -1]),
             len([x for x in value["countries"] if x == ""]),
-            value["unknown_routers"],
         ]
         if key in runs:
             runs[key] += new_values
@@ -56,7 +57,6 @@ def create_data_frame(source):
         "Carbon Emission",
         "Error Carbon Val",
         "Error lookup",
-        "Unknown Routers",
     ]
     cols = pd.MultiIndex.from_product([main_cols, sec_cols])
 
@@ -160,6 +160,3 @@ def export_data(source, output_file, output_path, type, csv=False):
     )
     fig.tight_layout()
     # fig.savefig(output_path + "/" + output_file)
-
-    # if csv:
-    #     create_csv_output(df, output_path + "/" + output_file + ".csv")

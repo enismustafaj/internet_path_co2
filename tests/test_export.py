@@ -19,12 +19,11 @@ class TestExport:
                 "hops": ["1", "2", "3"],
                 "carbon_intensities": [1, 2, 3],
                 "countries": ["DE", "DE", "DE"],
-                "unknown_routers": 0,
             },
         }
         runs = {}
         runs = export.create_json_output(runs, content)
-        assert runs == {"1": [3, 6, 0, 0, 0]}
+        assert runs == {"1": [3, 6, 0, 0]}
 
     def test_create_csv_output(self, tmp_path):
         df = pd.DataFrame([[1, 2, 3], [4, 5, 6]], columns=["A", "B", "C"])
